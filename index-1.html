@@ -18,27 +18,31 @@
     background-color: #007bff !important;
     color: white;
 }
+  
 </style>
 
 </head>
+<body style="background-color:grey">
+<div id="openseadragon1" style="position:absolute; top:10px; left:10px; width:80%; height:80%;"></div>
+<div id="recordprogress" style="position:absolute; top:530px; left:850"></div>
+<div id="message" style="position:absolute; top:600px; left:1000px; height:500px; width:400px"><h3>To annotate image, hold <b>SHIFT</b> and draw a box<br>To record a narration, click on the <img height="30px" width="30px" id="recimg" src="record.png">, and then drag the image and zoom with the mouse, describing what you see<h3></h3></div>
+<div id="back" style="position:absolute; top:10px; left:1300px; width:400px; height:100px"><a href="index.html" id="goback">Go Back</a></div>
 
+<div id="controls" style="position:absolute; top:650px; left:10px; width:80%; height:80%;">
 <label onmouseout="changenormal(event)" onmouseover="changeCol(event)" id="record" for="recstart"><img height="40px" width="40px" id="recimg" src="record.png"></label>
 <button onclick="startrecord()" id="recstart" style="display:none">Start record</button>
 <label onmouseout="changenormal(event)" onmouseover="changeCol(event)" id="play" for="playback"><img height="40px" width="40px" src="play.png"></label>
 <button onclick="playback()" id="playback" style="display:none">playback</button>
 <label onmouseout="changenormal(event)" onmouseover="changeCol(event)" id="stop" for="stopplay"><img height="40px" width="40px" src="stop.png"></label>
 <button onclick="stopplay()" id="stopplay" style="display:none">playback</button>
+</div>
 
-<div id="recordprogress" style="position:absolute; top:530px; left:850"></div>
 
-<div id="openseadragon1" style="position:absolute; left:10px; width:800px; height:500px;"></div>
-<div id="message" style="position:absolute; top:0; left:10px; width:800px; height:500px;"><h3>To annotate image, hold <b>SHIFT</b> and draw a box<br>To record a narration, click on the <img height="30px" width="30px" id="recimg" src="record.png">, and then drag the image and zoom with the mouse, describing what you see<h3></h3></div>
-
-      <video id="video"></video>
+      <!-- <video id="video"></video> -->
       <script>
 
         var localStream;
-        var recorder;
+        // var recorder;
         var recordChunk;
         var viewer
         var zoomrecord
@@ -113,14 +117,18 @@
           // });
         }
 
-        navigator.mediaDevices.getUserMedia({
-          audio: true,
-        }).then(stream => {
-          localStream = stream;
-          // preview.srcObject = stream;
-        });
+        // navigator.mediaDevices.getUserMedia({
+        //   audio: true,
+        // }).then(stream => {
+        //   localStream = stream;
+        //   // preview.srcObject = stream;
+        // });
 
-
+        function saveannotations()
+        {
+            if (anno.getAnnotations().length != 0)
+              JSON.stringify (anno.getAnnotations())
+        }
         // window.api.send("async", "refresh,block")
         // window.api.receive('async-reply', (arg) => {
         //   // alert("async-reply received with " + arg)
@@ -194,7 +202,7 @@
         function setaudiofile (audiofile)
         {
           // alert (audiofile)
-          document.getElementById ("video").src = audiofile + "?n=" + Math.random(10)
+          // document.getElementById ("video").src = audiofile + "?n=" + Math.random(10)
         }
 
         function populategrid(pJSON) {
@@ -247,7 +255,7 @@
 
           if (document.getElementById("recstart").innerText == "STOP record") {
             document.getElementById("recstart").innerText = "Start record"
-            recorder.stop()
+            // recorder.stop()
             document.getElementById("record").innerHTML = '<img height="40px" width="40px" id="recimg" src="record.png">'
             document.getElementById("play").style.display = "inline"
             document.getElementById("stop").style.display = "inline"
@@ -272,15 +280,15 @@
             document.getElementById("recordprogress").innerText = "Recording: " + Math.round(arrcount / 5)
             zoomrecord = ""
 
-            recorder = new MediaRecorder(localStream);
+            // recorder = new MediaRecorder(localStream);
             console.log(document.getElementById("recstart").innerText)
-            console.log(recorder)
-            recorder.ondataavailable = e => {
-              recordChunk.push(e.data);
-              console.log("push")
-            }
+            // console.log(recorder)
+            // recorder.ondataavailable = e => {
+            //   recordChunk.push(e.data);
+            //   console.log("push")
+            // }
             recordChunk = [];
-            recorder.start();
+            // recorder.start();
             myinterval1 = setInterval(getdata, 200);
           }
         }
@@ -290,8 +298,8 @@
           clearInterval (myinterval1)
           clearInterval (myinterval2)
           arrcount = 0
-          document.getElementById("video").pause()
-          document.getElementById("video").load()
+          // document.getElementById("video").pause()
+          // document.getElementById("video").load()
           document.getElementById ("recordprogress").innerText = ""
           document.getElementById("record").innerHTML = '<img height="40px" width="40px" id="recimg" src="record.png">'
           document.getElementById ("record").style.display = "inline"
@@ -355,7 +363,7 @@
  
           viewarr = zoomrecord.split(";")
           // alert("PLAYBACK");
-          document.getElementById("video").play();
+          // document.getElementById("video").play();
           arrcount = 1
           myinterval2 = setInterval(playview, 200)
         }
