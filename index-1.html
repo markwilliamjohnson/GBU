@@ -1,0 +1,382 @@
+<head>
+  <script src="openseadragon.min.js"></script>
+  <link rel="stylesheet" href="slateWhite.css">
+  <!-- <link type="text/css" rel="stylesheet" href="jsgrid/jsgrid.min.css" />
+  <link type="text/css" rel="stylesheet" href="jsgrid/jsgrid-theme.min.css" /> -->
+  <script type="text/javascript" src="jquery-1.9.0.min.js"></script>
+  <!-- <script type="text/javascript" src="jsgrid/jsgrid.min.js"></script> -->
+  <!-- CSS stylesheet -->
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@recogito/annotorious-openseadragon@2.7.7/dist/annotorious.min.css">
+
+  <!-- JS -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@recogito/annotorious-openseadragon@2.7.7/dist/openseadragon-annotorious.min.js"></script>
+<style>
+  tr.highlight td.jsgrid-cell {
+    background-color: #007bff !important;
+    color: white;
+}
+</style>
+
+</head>
+
+<label onmouseout="changenormal(event)" onmouseover="changeCol(event)" id="record" for="recstart"><img height="40px" width="40px" id="recimg" src="record.png"></label>
+<button onclick="startrecord()" id="recstart" style="display:none">Start record</button>
+<label onmouseout="changenormal(event)" onmouseover="changeCol(event)" id="play" for="playback"><img height="40px" width="40px" src="play.png"></label>
+<button onclick="playback()" id="playback" style="display:none">playback</button>
+<label onmouseout="changenormal(event)" onmouseover="changeCol(event)" id="stop" for="stopplay"><img height="40px" width="40px" src="stop.png"></label>
+<button onclick="stopplay()" id="stopplay" style="display:none">playback</button>
+
+<div id="recordprogress" style="position:absolute; top:530px; left:850"></div>
+
+<div id="openseadragon1" style="position:absolute; left:10px; width:800px; height:500px;"></div>
+<div id="message" style="position:absolute; top:530; left:10px; width:800px; height:500px;"><h3>To annotate image, hold <b>SHIFT</b> and draw a box<br>To record a narration, click on the <img height="30px" width="30px" id="recimg" src="record.png">, and then drag the image and zoom with the mouse, describing what you see<h3></h3></div>
+
+      <video id="video"></video>
+      <script>
+
+        var localStream;
+        var recorder;
+        var recordChunk;
+        var viewer
+        var zoomrecord
+        var g_image
+        
+
+        var myinterval1 = null
+        var myinterval2 = null
+        var arrcount = 0
+        const queryString = window.location.search;
+        console.log(queryString);
+        const urlParams = new URLSearchParams(queryString);
+        const picture = urlParams.get('picture')
+
+        window.onload = function () {
+          viewer = OpenSeadragon({
+            id: "openseadragon1",
+            showNavigator: true,
+            maxZoomLevel: 100,
+            prefixUrl: "openseadragon/images/",
+            tileSources: {
+              type: "image",
+              url: "fullbook/Picture2.jpg"
+            }
+          });
+
+          // Initialize the Annotorious plugin
+          anno = OpenSeadragon.Annotorious(viewer);
+
+          anno.on('createAnnotation', function (a) {
+            // Do something
+          });
+          // anno.makeAnnotatable(viewer);
+          // anno.addHandler('onAnnotationCreated', function (annotation) {
+          // }),
+          //   //  imagingHelper = viewer.activateImagingHelper({onImageViewChanged: onImageViewChanged}),
+          //   //   viewer.addHandler('canvas-release', mouseupHandler);
+          //   anno.addHandler('onEditorShown', function (annotation) {
+          //     document.getElementById("editortext").value = myCaption
+          //     document.getElementById("Clickdrag").style.backgroundColor = greycol
+          //     //    console.log (document.getElementById("editortext").value)
+
+          //   });
+          // anno.addHandler("onSelectionCompleted", function (event) {
+
+          // }
+          // );
+
+          // anno.addHandler("onSelectionStarted", function (event) {
+
+          //   webPointstr = '{"x":' + event["offsetX"] + ',"y":' + event["offsetY"] + '}'
+          //   webPoint = JSON.parse(webPointstr)
+          //   console.log(webPoint)
+          //   var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
+          //   xfract = viewportPoint["x"]
+          //   yfract = viewportPoint["y"]
+          //   var myAnnotation = {
+          //     src: 'dzi://openseadragon/something',
+          //     text: "new annotation",
+          //     units: "pixel",
+          //     shapes: [{
+          //       type: 'rect',
+          //       geometry: { x: xfract, y: yfract, width: 0.01, height: 0.01 }
+          //     }]
+          //   }
+          //   anno.addAnnotation(myAnnotation)
+          // });
+
+          // anno.addHandler("onPopupShown", function (annotation) {
+          //   console.log("here is this " + annotation);
+
+          // });
+        }
+
+        navigator.mediaDevices.getUserMedia({
+          audio: true,
+        }).then(stream => {
+          localStream = stream;
+          // preview.srcObject = stream;
+        });
+
+
+        // window.api.send("async", "refresh,block")
+        // window.api.receive('async-reply', (arg) => {
+        //   // alert("async-reply received with " + arg)
+        //   myinterval2 = 0
+        //   zoomrecord = ""
+        //   viewarr = new Array()
+        //   arrcount = 1
+        //   if (anno.getAnnotations().length != 0)
+        //     window.api.send("savedata", JSON.stringify (anno.getAnnotations()))
+
+        //   myargs = arg.split(",")
+        //   g_image = arg
+        //   tilesource1 = { type: "image", url: arg }
+
+        //   viewer.open(tilesource1)
+
+        //   anno.clearAnnotations()
+        //   anno.disableEditor = false
+        //   picture = myargs[0]
+        //   datapath = picture.substring (0, picture.lastIndexOf("/fullbook")) 
+        //   picture1 = datapath + picture.substring (picture.lastIndexOf("/"), picture.length)
+        //   picturefilename = picture.substring (picture.lastIndexOf("/"), picture.length)
+        //   try
+        //   {
+        //   anno.loadAnnotations (picture1 + ".anno")
+        //   }
+        //   catch (e){}
+          
+        //   // window.api.send ("getrecordstr", picturefilename)
+          
+        // });
+
+      </script>
+
+      <script>
+        selectedRow = null
+
+        // window.api.send("getFileList", "")
+        // window.api.receive("getFileList", (data) => {
+        //   // alert("got data " + data)
+        //   loadreport(data)
+        // })
+
+        function loadreport(data) {
+          // alert("hmmm " + data)
+          try {
+            myJSON = JSON.parse(data)
+            populategrid(myJSON);
+          }
+          catch (e) { }
+        }
+
+        function setrecstr (recstr)
+        {
+          zoomrecord = recstr
+
+        }
+        function changeCol (e)
+        {
+          // alert ("colour change")
+          e.target.style.backgroundColor = "red"
+        }
+
+        function changenormal (e)
+        {
+          // alert ("colour change")
+          e.target.style.backgroundColor = ""
+        }
+
+
+        function setaudiofile (audiofile)
+        {
+          // alert (audiofile)
+          document.getElementById ("video").src = audiofile + "?n=" + Math.random(10)
+        }
+
+        function populategrid(pJSON) {
+          var clients = pJSON
+
+          $("#jsGrid").jsGrid({
+            width: "250px",
+            height: "500px",
+
+            inserting: false,
+            editing: false,
+            sorting: false,
+            paging: true,
+
+            data: clients,
+            pageSize: 20,
+            fields: [
+              { name: "fname", type: "text", width: 50 },
+              { name: "annotated?", type: "text", width: 30 }
+            ],
+            rowClick: function (args) {
+              $(".jsgrid-row, .jsgrid-alt-row").removeClass("highlight");
+              gRow = this.rowByItem(args.item);
+              gRow.addClass("highlight");
+              selectRowItem = args.item;
+              console.log((selectRowItem))
+
+              var getData = args.item;
+              var keys = Object.keys(getData);
+              var text = [];
+              $.each(keys, function (idx, value) {
+                if (value == "fname")
+                  // window.api.send("setnextimg", getData[value])
+                  g_image = getData[value]
+              });
+
+              $("#label").text(text.join(", "))
+
+            }
+
+          });
+        }
+        loadreport()
+
+
+        greycol = document.getElementById("recstart").style.backgroundColor
+
+
+        function startrecord() {
+
+          if (document.getElementById("recstart").innerText == "STOP record") {
+            document.getElementById("recstart").innerText = "Start record"
+            recorder.stop()
+            document.getElementById("record").innerHTML = '<img height="40px" width="40px" id="recimg" src="record.png">'
+            document.getElementById("play").style.display = "inline"
+            document.getElementById("stop").style.display = "inline"
+            setTimeout(() => { saveaudio1() }, 500);
+
+            document.getElementById("recstart").style.backgroundColor = greycol
+            // document.getElementById("playback").style.visibility = "block"
+            // window.api.send("saverecorddata", zoomrecord)
+
+            clearEverything()
+            
+          }
+
+          else {
+            document.getElementById("recstart").innerText = "STOP record"
+            document.getElementById("recstart").style.backgroundColor = "red"
+            document.getElementById("record").innerHTML = '<img height="40px" width="40px" id="recimg" src="stop.png">'
+            document.getElementById ("play").style.display="none"
+            document.getElementById("stop").style.display = "none"
+            // document.getElementById("playback").style.visibility = "none"
+            arrcount = 0
+            document.getElementById("recordprogress").innerText = "Recording: " + Math.round(arrcount / 5)
+            zoomrecord = ""
+
+            recorder = new MediaRecorder(localStream);
+            console.log(document.getElementById("recstart").innerText)
+            console.log(recorder)
+            recorder.ondataavailable = e => {
+              recordChunk.push(e.data);
+              console.log("push")
+            }
+            recordChunk = [];
+            recorder.start();
+            myinterval1 = setInterval(getdata, 200);
+          }
+        }
+
+        function clearEverything()
+        {
+          clearInterval (myinterval1)
+          clearInterval (myinterval2)
+          arrcount = 0
+          document.getElementById("video").pause()
+          document.getElementById("video").load()
+          document.getElementById ("recordprogress").innerText = ""
+          document.getElementById("record").innerHTML = '<img height="40px" width="40px" id="recimg" src="record.png">'
+          document.getElementById ("record").style.display = "inline"
+          document.getElementById("play").style.display = "inline"
+          document.getElementById("stop").style.display = "inline"
+
+        }
+
+        function saveaudio1() {
+          const blob = new Blob(recordChunk);
+          let fr = new FileReader();
+          fr.onload = _ => {
+            console.log(fr.result)
+            arrayBuffer = fr.result
+            saveaudiofile(fr.result)
+            // alert ("writing file")
+          }
+          fr.readAsArrayBuffer(blob)
+        }
+
+        function saveaudiofile(arrayBuffer) {
+          console.log(arrayBuffer)
+          // window.api.send("saveaudio", arrayBuffer)
+          // alert ("Image " + g_image.substring(g_image.lastIndexOf("/")+1, g_image.length))
+          // window.api.send ("getrecordstr", g_image.substring(g_image.lastIndexOf("/")+1, g_image.length))
+        }
+
+
+        function getdata() {
+          arrcount++;
+          document.getElementById("recordprogress").innerText = "Recording: " + Math.round(arrcount / 5) + " secs"
+
+          zoomrecord = zoomrecord + ";" + viewer.viewport.getZoom() + "#" + viewer.viewport.getCenter()
+        }
+
+        function playview() {
+          zoom1 = viewarr[arrcount].split("#")
+          zoom2 = zoom1[1].split(",")
+          zoom2[0] = parseFloat(zoom2[0].substring(1, zoom2[0].length))
+          zoom2[1] = parseFloat(zoom2[1].substring(0, zoom2[1].length - 1))
+          viewer.viewport.panTo(new OpenSeadragon.Point(zoom2[0], zoom2[1]), false)
+          viewer.viewport.zoomTo(parseFloat(zoom1))
+          arrcount++;
+          document.getElementById("recordprogress").innerText = "Playback progress: " + Math.round((arrcount / viewarr.length) * 100) + "%"
+          if (arrcount == viewarr.length)
+            clearEverything()
+        }
+
+        function stopplay()
+        {
+          clearEverything ()
+ 
+          arrcount = 0
+        }
+
+        function playback() {
+          clearEverything()
+          document.getElementById("record").style.display = "none"
+            document.getElementById("play").style.display = "none"
+            document.getElementById("stop").style.display = "inline"
+ 
+          viewarr = zoomrecord.split(";")
+          // alert("PLAYBACK");
+          document.getElementById("video").play();
+          arrcount = 1
+          myinterval2 = setInterval(playview, 200)
+        }
+
+        function playview() {
+          zoom1 = viewarr[arrcount].split("#")
+          zoom2 = zoom1[1].split(",")
+          zoom2[0] = parseFloat(zoom2[0].substring(1, zoom2[0].length))
+          zoom2[1] = parseFloat(zoom2[1].substring(0, zoom2[1].length - 1))
+          viewer.viewport.panTo(new OpenSeadragon.Point(zoom2[0], zoom2[1]), false)
+          viewer.viewport.zoomTo(parseFloat(zoom1))
+          arrcount++;
+          document.getElementById("recordprogress").innerText = "Playback progress: " + Math.round((arrcount / viewarr.length) * 100) + "%"
+          if (arrcount == viewarr.length)
+          {
+            clearEverything ()
+
+          }
+        }
+
+      </script>
+      </body>
+
+      </html>
