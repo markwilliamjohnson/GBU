@@ -52,7 +52,7 @@
         console.log(queryString);
         const urlParams = new URLSearchParams(queryString);
         const picture = urlParams.get('picture')
-
+        console.log (picture)
         window.onload = function () {
           viewer = OpenSeadragon({
             id: "openseadragon1",
