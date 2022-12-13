@@ -1,5 +1,8 @@
 <head>
   <script src="openseadragon.min.js"></script>
+  <!-- Import the JSZip library from a CDN -->
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.5.0/dist/jszip.min.js"></script>
+
   <link rel="stylesheet" href="slateWhite.css">
   <!-- <link type="text/css" rel="stylesheet" href="jsgrid/jsgrid.min.css" />
   <link type="text/css" rel="stylesheet" href="jsgrid/jsgrid-theme.min.css" /> -->
@@ -10,7 +13,6 @@
     href="https://cdn.jsdelivr.net/npm/@recogito/annotorious-openseadragon@2.7.7/dist/annotorious.min.css">
 
   <!-- JS -->
-
   <script
     src="https://cdn.jsdelivr.net/npm/@recogito/annotorious-openseadragon@2.7.7/dist/openseadragon-annotorious.min.js"></script>
 <style>
@@ -23,10 +25,14 @@
 
 </head>
 <body style="background-color:grey">
+  
 <div id="openseadragon1" style="position:absolute; top:10px; left:10px; width:80%; height:80%;"></div>
 <div id="recordprogress" style="position:absolute; top:530px; left:850"></div>
 <div id="message" style="position:absolute; top:550px; left:1000px; height:500px; width:400px"><h3>To annotate image, hold <b>SHIFT</b> and draw a box<br>To record your movements through the image, click on the <img height="30px" width="30px" id="recimg" src="record.png">, and then drag the image and zoom with the mouse, describing what you see<h3></h3></div>
 <div id="back" style="position:absolute; top:10px; left:1300px; width:400px; height:100px"><a href="index.html" id="goback">Go Back</a></div>
+<div id="updown" style="position:absolute; top:600px; left:800px; width:400px; height:100px">
+
+</div>
 
 <div id="controls" style="position:absolute; top:600px; left:10px; width:80%; height:80%;">
 <label onmouseout="changenormal(event)" onmouseover="changeCol(event)" id="record" for="recstart"><img height="40px" width="40px" id="recimg" src="record.png"></label>
@@ -35,6 +41,11 @@
 <button onclick="playback()" id="playback" style="display:none">playback</button>
 <label onmouseout="changenormal(event)" onmouseover="changeCol(event)" id="stop" for="stopplay"><img height="40px" width="40px" src="stop.png"></label>
 <button onclick="stopplay()" id="stopplay" style="display:none">playback</button>
+<label onmouseout="changenormal(event)" onmouseover="changeCol(event)" for="download"><img title="download annotations" height="40px" width="40px" src="download.png"></label>
+<button onclick="download()" id="download" style="display:none">Download</button>
+<label onmouseout="changenormal(event)" onmouseover="changeCol(event)" for="upload"><img title="upload annotations" height="40px" width="40px" src="import.png"></label>
+<button onclick="loadannot()" id="upload" style="display:none">upload annotation</button>
+
 </div>
 
 
@@ -48,7 +59,6 @@
         var zoomrecord
         var g_image
         
-
         var myinterval1 = null
         var myinterval2 = null
         var arrcount = 0
@@ -75,6 +85,7 @@
           anno.on('createAnnotation', function (a) {
             // Do something
           });
+   
           // anno.makeAnnotatable(viewer);
           // anno.addHandler('onAnnotationCreated', function (annotation) {
           // }),
@@ -124,6 +135,36 @@
         //   // preview.srcObject = stream;
         // });
 
+
+
+        <!-- Create a new zip file and add some files to it -->
+function download () {
+  // Create a new zip file
+  // const zip = new JSZip();
+
+  // // Add some files to the zip
+  // zip.file('annotation.txt',   mycontent = JSON.stringify (anno.getAnnotations()));
+  // picblob = new Blob (picture)
+  // zip.file(picture, picblob)
+  // zip.file("index.html", document.body)
+  // // Generate the zip file and download it
+  // zip.generateAsync({ type: 'blob' }).then(function(content) {
+
+    const blob = new Blob([JSON.stringify (anno.getAnnotations())], { type: 'application/json' })
+    const objUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', objUrl)
+    link.setAttribute('download', "Annotation-" + picture + ".txt")
+    link.click()
+}
+  
+function loadannot()
+{
+  let annottxt = prompt ("Past annotation text here")
+  const blob = new Blob([annottxt], { type: 'application/json' })
+  const objUrl = URL.createObjectURL(blob)
+  anno.loadAnnotations(objUrl)
+}
         function saveannotations()
         {
             if (anno.getAnnotations().length != 0)
